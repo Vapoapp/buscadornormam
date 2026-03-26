@@ -71,13 +71,14 @@
     align-items: center;
     justify-content: space-between;
     gap: 14px;
+    width: 100%;
   }
 
   .brand {
     display: flex;
     align-items: center;
     gap: 14px;
-    min-width: 0;
+    flex: 1;
   }
 
   .back-btn, .theme-toggle {
@@ -162,6 +163,14 @@
     color: #0c1e2e;
   }
 
+  body:not(.dark) .brand-title {
+    color: #0c1e2e;
+  }
+
+  body:not(.dark) .brand-title .green {
+    color: var(--accent);
+  }
+
   body:not(.dark) .theme-toggle .indicator {
     background: #7c3aed;
     box-shadow: 0 0 0 4px rgba(124,58,237,0.12);
@@ -203,38 +212,48 @@
 
   /* ── Header ── */
   header {
-    padding: 48px 0 36px;
+    padding: 24px 0 20px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    align-items: flex-start;
+    gap: 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 24px;
+  }
+
+  body:not(.dark) header {
+    border-bottom-color: rgba(0,0,0,0.08);
   }
 
   .logo {
     font-family: var(--display);
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--amber);
-    opacity: 0.85;
+    opacity: 0.75;
+    white-space: nowrap;
   }
 
   h1 {
     font-family: var(--display);
-    font-size: clamp(28px, 5vw, 42px);
+    font-size: clamp(22px, 3.5vw, 30px);
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1;
     letter-spacing: -0.02em;
     color: var(--white);
+    white-space: nowrap;
   }
 
   h1 span { color: var(--amber2); }
 
   .subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--muted);
-    margin-top: 4px;
     font-weight: 300;
+    margin-left: 0;
+    text-align: left;
   }
 
   /* ── Loading screen ── */
@@ -647,8 +666,7 @@
 
 <div class="wrap">
   <header>
-    <div class="logo">Buscador ✦ NORMAMs</div>
-    <h1>Normas<br><span>Marítimas</span></h1>
+    <h1>Normas <span>Marítimas</span></h1>
     <p class="subtitle">Pesquise em todas as NORMAMs simultaneamente</p>
   </header>
 
@@ -675,7 +693,7 @@
     </div>
 
     <div class="search-hint">
-      Use <code>AND</code> / <code>OR</code> entre termos &nbsp;·&nbsp; <code>"aspas"</code> para frase exata
+      Use <code>+</code> para E / <code>OU</code> para ou &nbsp;·&nbsp; <code>"aspas"</code> para frase exata &nbsp;·&nbsp; <code>"aspas"</code> para frase exata
     </div>
     <div class="filters-row">
       <span class="filters-label">Filtrar:</span>
@@ -866,6 +884,9 @@ function highlightParsed(text, parsed) {
 function buscar() {
   const q = $q.value.trim();
   if (!q || !db) return;
+
+  // GA4 — evento padrão de busca (captura o termo imediatamente)
+  try { gtag('event', 'search', { search_term: q }); } catch(e) {}
 
   currentPage = 1;
 
