@@ -509,14 +509,15 @@
 
   .hit-page {
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 12px 0 12px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    padding: 12px 0;
     font-family: var(--mono);
     font-size: 11px;
     color: var(--muted);
     border-right: 1px solid rgba(255,255,255,0.04);
-    padding-top: 14px;
   }
 
   .hit-text {
@@ -1035,8 +1036,8 @@ function renderResults({ q, parsed, grouped }) {
     const firstPage = hits.length > 0 ? parseInt(hits[0].pagina) || 1 : 1;
     const pdfUrl = meta.url ? meta.url + (meta.url.endsWith('.pdf') ? `#page=${firstPage}` : '') : '';
 
-    // Hits paginados por norma
-    const hitsHtml = hits.slice(0, HITS_PER_PAGE).map(({ pagina, texto }) => {
+    // Mostra todos os hits
+    const hitsHtml = hits.map(({ pagina, texto }) => {
       const pageUrl = meta.url && meta.url.endsWith('.pdf')
         ? `${meta.url}#page=${pagina}`
         : meta.url || '';
@@ -1052,12 +1053,7 @@ function renderResults({ q, parsed, grouped }) {
       </div>`;
     }).join('');
 
-    const moreHits = hits.length > HITS_PER_PAGE
-      ? `<div style="padding:10px 18px;font-size:12px;color:var(--muted);font-family:var(--mono);border-top:1px solid rgba(255,255,255,0.04)">
-           + ${hits.length - HITS_PER_PAGE} ocorrências adicionais —
-           <a href="${escHtml(pdfUrl || meta.url)}" target="_blank" rel="noopener" style="color:var(--foam)">consultar PDF</a>
-         </div>`
-      : '';
+    const moreHits = '';
 
     const footerLink = pdfUrl
       ? `<a href="${escHtml(pdfUrl)}" target="_blank" rel="noopener">
