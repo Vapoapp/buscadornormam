@@ -1010,6 +1010,10 @@ function renderResults({ q, parsed, grouped }) {
     const card = document.createElement('div');
     card.className = 'norma-card';
 
+    // Pega a menor página encontrada para abrir o PDF nela
+    const firstPage = hits.length > 0 ? parseInt(hits[0].pagina) || 1 : 1;
+    const pdfUrl = meta.url ? meta.url + (meta.url.endsWith('.pdf') ? `#page=${firstPage}` : '') : '';
+
     // Hits paginados por norma
     const hitsHtml = hits.slice(0, HITS_PER_PAGE).map(({ pagina, texto }) => `
       <div class="hit">
@@ -1024,10 +1028,6 @@ function renderResults({ q, parsed, grouped }) {
            <a href="${escHtml(pdfUrl || meta.url)}" target="_blank" rel="noopener" style="color:var(--foam)">consultar PDF</a>
          </div>`
       : '';
-
-    // Pega a menor página encontrada para abrir o PDF nela
-    const firstPage = hits.length > 0 ? parseInt(hits[0].pagina) || 1 : 1;
-    const pdfUrl = meta.url ? meta.url + (meta.url.endsWith('.pdf') ? `#page=${firstPage}` : '') : '';
 
     const footerLink = pdfUrl
       ? `<a href="${escHtml(pdfUrl)}" target="_blank" rel="noopener">
