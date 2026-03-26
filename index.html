@@ -785,23 +785,14 @@ function buscar() {
   if (!qEscaped) return;
 
   let sql, params;
+  const likeQ = `%${q}%`;
 
   if (activeFilter === 'all') {
-    sql = `
-      SELECT codigo, pagina, texto
-      FROM normas
-      WHERE normas MATCH ?
-      ORDER BY rank
-    `;
-    params = [qEscaped];
+    sql = `SELECT codigo, pagina, texto FROM normas WHERE texto LIKE ? ORDER BY codigo`;
+    params = [likeQ];
   } else {
-    sql = `
-      SELECT codigo, pagina, texto
-      FROM normas
-      WHERE normas MATCH ? AND codigo = ?
-      ORDER BY rank
-    `;
-    params = [qEscaped, activeFilter];
+    sql = `SELECT codigo, pagina, texto FROM normas WHERE texto LIKE ? AND codigo = ? ORDER BY codigo`;
+    params = [likeQ, activeFilter];
   }
 
   let rows;
@@ -809,25 +800,7 @@ function buscar() {
     const res = db.exec(sql, params);
     rows = res[0]?.values || [];
   } catch (e) {
-    // Fallback: busca LIKE se FTS falhar (ex: termo muito curto)
-    try {
-      const likeQ = `%${q}%`;
-      if (activeFilter === 'all') {
-        const res2 = db.exec(
-          `SELECT codigo, pagina, texto FROM normas WHERE texto LIKE ? LIMIT 5000`,
-          [likeQ]
-        );
-        rows = res2[0]?.values || [];
-      } else {
-        const res2 = db.exec(
-          `SELECT codigo, pagina, texto FROM normas WHERE texto LIKE ? AND codigo = ? LIMIT 5000`,
-          [likeQ, activeFilter]
-        );
-        rows = res2[0]?.values || [];
-      }
-    } catch (e2) {
-      rows = [];
-    }
+    rows = [];
   }
 
   // Agrupa por norma
