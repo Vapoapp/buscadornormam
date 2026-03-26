@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vapo Search — Buscador de Normas Marítimas</title>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9ZWN759NS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9ZWN759NS6');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:    #0a1628;
+    --navy2:   #0f2044;
+    --navy3:   #1a3060;
+    --ocean:   #1e4d8c;
+    --wave:    #2e6fc4;
+    --foam:    #5b9bd5;
+    --sky:     #a8cbee;
+    --sand:    #f0e6d0;
+    --amber:   #e8a030;
+    --amber2:  #f4b84a;
+    --white:   #f8f4ee;
+    --muted:   #8fa8c8;
+    --danger:  #e05555;
+    --radius:  6px;
+    --mono:    'DM Mono', monospace;
+    --sans:    'DM Sans', sans-serif;
+    --display: 'Syne', sans-serif;
+    /* Vapozeiro shared vars */
+    --accent:  #0f8c55;
+    --line:    rgba(24,50,72,0.10);
+    --header-bg: rgba(8,20,31,0.92);
+    --header-line: rgba(255,255,255,0.08);
+    --text:    #f8f4ee;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Vapozeiro topbar ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--header-bg);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--header-line);
+  }
+
+  .topbar-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .back-btn, .theme-toggle {
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    border-radius: 10px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    text-decoration: none;
+    font-family: 'Inter', var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .back-btn:hover, .theme-toggle:hover {
+    transform: translateY(-1px);
+    border-color: rgba(15,140,85,0.35);
+  }
+
+  .brand-copy {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .brand-title {
+    font-family: 'Inter', var(--sans);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #f4f8fb;
+    text-decoration: none;
+  }
+
+  .brand-title .green { color: var(--accent); }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .theme-toggle .indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34,197,94,0.14);
+    flex: 0 0 auto;
+  }
+
+  /* ── Light theme ── */
+  body:not(.dark) {
+    --navy:   #eef2f5;
+    --navy2:  #ffffff;
+    --navy3:  rgba(24,50,72,0.10);
+    --ocean:  #1e4d8c;
+    --wave:   #2e6fc4;
+    --foam:   #1e4d8c;
+    --sky:    #183248;
+    --amber:  #b36a00;
+    --amber2: #c47a10;
+    --white:  #0c1e2e;
+    --muted:  #7f96aa;
+    --header-bg: rgba(255,255,255,0.92);
+    --header-line: rgba(24,50,72,0.08);
+    --text:   #0c1e2e;
+    --line:   rgba(24,50,72,0.10);
+  }
+
+  body:not(.dark) .back-btn,
+  body:not(.dark) .theme-toggle {
+    background: rgba(255,255,255,0.6);
+    color: #0c1e2e;
+  }
+
+  body:not(.dark) .theme-toggle .indicator {
+    background: #7c3aed;
+    box-shadow: 0 0 0 4px rgba(124,58,237,0.12);
+  }
+
+  body:not(.dark) #q {
+    background: #fff;
+    color: #0c1e2e;
+  }
+
+  body:not(.dark) .norma-card {
+    background: #fff;
+  }
+
+  body:not(.dark) .norma-badge {
+    background: #dbeafe;
+    color: #1e4d8c;
+  }
+
+  /* ── Background decoration ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 0%, rgba(46,111,196,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 100%, rgba(30,77,140,0.22) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 48px 0 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .logo {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--amber);
+    opacity: 0.85;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--white);
+  }
+
+  h1 span { color: var(--amber2); }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  /* ── Loading screen ── */
+  #loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 64px 0;
+    text-align: center;
+  }
+
+  .anchor-icon {
+    width: 48px;
+    height: 48px;
+    opacity: 0.5;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50%       { opacity: 0.8; transform: scale(1.06); }
+  }
+
+  .loading-text {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--sky);
+    letter-spacing: 0.05em;
+  }
+
+  .progress-bar {
+    width: 260px;
+    height: 3px;
+    background: var(--navy3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--wave), var(--amber));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .loading-detail {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* ── Search area ── */
+  #search-area { display: none; }
+
+  .search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  #q {
+    flex: 1;
+    background: var(--navy2);
+    border: 1.5px solid var(--navy3);
+    border-radius: var(--radius);
+    color: var(--white);
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 400;
+    padding: 14px 18px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  #q::placeholder { color: var(--muted); opacity: 0.6; }
+
+  #q:focus {
+    border-color: var(--wave);
+    box-shadow: 0 0 0 3px rgba(46,111,196,0.15);
+  }
+
+  #btn-buscar {
+    background: var(--wave);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0 24px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  #btn-buscar:hover  { background: var(--ocean); }
+  #btn-buscar:active { transform: scale(0.97); }
+
+  /* ── Filters ── */
+  .filters-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .filters-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .chip {
+    background: var(--navy2);
+    border: 1px solid var(--navy3);
+    border-radius: 100px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 12px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .chip:hover  { border-color: var(--foam); color: var(--sky); }
+  .chip.active {
+    background: var(--ocean);
+    border-color: var(--wave);
+    color: var(--white);
+  }
+
+  .chip-all {
+    background: var(--navy3);
+    border-color: var(--muted);
+    color: var(--sky);
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 11px;
+  }
+
+  .chip-all.active {
+    background: var(--amber);
+    border-color: var(--amber2);
+    color: var(--navy);
+  }
+
+  /* ── Stats bar ── */
+  #stats {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-family: var(--mono);
+    min-height: 18px;
+  }
+
+  #stats strong { color: var(--amber2); }
+
+  /* ── Results ── */
+  #results { display: flex; flex-direction: column; gap: 16px; }
+
+  .norma-card {
+    background: var(--navy2);
+    border: 1px solid var(--navy3);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .norma-card:hover { border-color: var(--ocean); }
+
+  .norma-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+    background: rgba(255,255,255,0.02);
+  }
+
+  .norma-badge {
+    background: var(--ocean);
+    border-radius: 4px;
+    color: var(--sky);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .norma-titulo {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    flex: 1;
+    line-height: 1.3;
+  }
+
+  .norma-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--amber);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .chevron {
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .norma-card.open .chevron { transform: rotate(180deg); }
+
+  .norma-hits {
+    display: none;
+    border-top: 1px solid var(--navy3);
+  }
+
+  .norma-card.open .norma-hits { display: block; }
+
+  /* ── Hit row ── */
+  .hit {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+
+  .hit:last-child { border-bottom: none; }
+  .hit:hover { background: rgba(46,111,196,0.08); }
+
+  .hit-page {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12px 0 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    border-right: 1px solid rgba(255,255,255,0.04);
+    padding-top: 14px;
+  }
+
+  .hit-text {
+    padding: 12px 18px;
+    font-size: 13.5px;
+    color: var(--sky);
+    line-height: 1.65;
+  }
+
+  .hit-text mark {
+    background: rgba(232,160,48,0.28);
+    color: var(--amber2);
+    border-radius: 2px;
+    padding: 0 2px;
+    font-weight: 500;
+  }
+
+  /* ── Footer da norma (link PDF) ── */
+  .norma-footer {
+    display: none;
+    padding: 12px 18px;
+    border-top: 1px solid var(--navy3);
+    background: rgba(255,255,255,0.015);
+  }
+
+  .norma-card.open .norma-footer { display: flex; align-items: center; gap: 8px; }
+
+  .norma-footer a {
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--foam);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.15s;
+  }
+
+  .norma-footer a:hover { color: var(--amber2); }
+
+  /* ── Pagination ── */
+  #pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+
+  .page-btn {
+    background: var(--navy2);
+    border: 1px solid var(--navy3);
+    border-radius: var(--radius);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 7px 13px;
+    transition: all 0.15s;
+  }
+
+  .page-btn:hover    { border-color: var(--wave); color: var(--sky); }
+  .page-btn.active   { background: var(--wave); border-color: var(--wave); color: var(--white); }
+  .page-btn.ellipsis { cursor: default; border-color: transparent; background: transparent; }
+  .page-btn:disabled { opacity: 0.35; cursor: default; }
+
+  .page-info {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    padding: 0 8px;
+  }
+
+  /* ── Empty / error states ── */
+  .empty {
+    text-align: center;
+    padding: 48px 0;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+  .empty h3   { font-family: var(--display); font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--sky); }
+  .empty p    { font-size: 13px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    header { padding: 32px 0 24px; }
+    .search-box { flex-direction: column; }
+    #btn-buscar { padding: 14px; }
+    .norma-titulo { font-size: 13px; }
+    .hit { grid-template-columns: 44px 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <a class="back-btn" href="https://vapozeiro.com.br/#ferramentas">← Voltar</a>
+      <div class="brand-copy">
+        <a class="brand-title" href="https://vapozeiro.com.br/#ferramentas">VAPO<span class="green">ZEIRO</span></a>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Alternar tema">
+        <span class="indicator"></span>
+        <span id="themeLabel">ESCURO</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <header>
+    <div class="logo">Buscador ✦ NORMAMs</div>
+    <h1>Normas<br><span>Marítimas</span></h1>
+    <p class="subtitle">Pesquise em todas as NORMAMs simultaneamente</p>
+  </header>
+
+  <!-- Loading -->
+  <div id="loading">
+    <svg class="anchor-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="10" r="4" stroke="#5b9bd5" stroke-width="2"/>
+      <line x1="24" y1="14" x2="24" y2="38" stroke="#5b9bd5" stroke-width="2"/>
+      <path d="M14 22 Q24 18 34 22" stroke="#5b9bd5" stroke-width="2" fill="none"/>
+      <path d="M14 38 Q10 38 10 34 L10 30" stroke="#5b9bd5" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M34 38 Q38 38 38 34 L38 30" stroke="#5b9bd5" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <line x1="14" y1="38" x2="34" y2="38" stroke="#5b9bd5" stroke-width="2"/>
+    </svg>
+    <div class="loading-text">Carregando normas...</div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="loading-detail" id="loading-detail">Iniciando banco de dados</div>
+  </div>
+
+  <!-- Search UI (hidden until DB loaded) -->
+  <div id="search-area">
+    <div class="search-box">
+      <input id="q" type="search" placeholder="Buscar nas NORMAMs... ex: tripulação mínima" autocomplete="off" spellcheck="false">
+      <button id="btn-buscar">BUSCAR</button>
+    </div>
+
+    <div class="filters-row">
+      <span class="filters-label">Filtrar:</span>
+      <div class="filter-chips" id="filter-chips">
+        <span class="chip chip-all active" data-norma="all">Todas</span>
+      </div>
+    </div>
+
+    <div id="stats"></div>
+    <div id="results"></div>
+    <div id="pagination"></div>
+  </div>
+</div>
+
+<!-- sql.js via CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+<script>
+// ─────────────────────────────────────────
+// Config
+// ─────────────────────────────────────────
+const DB_URL        = 'normas.db';
+const HITS_PER_PAGE = 20; // hits por página (dentro de cada norma)
+const CARDS_PER_PAGE = 10; // normas por página de resultados
+
+// ─────────────────────────────────────────
+// State
+// ─────────────────────────────────────────
+let db              = null;
+let allNormas       = [];
+let activeFilter    = 'all';
+let currentPage     = 1;
+let lastResults     = null;
+
+// ─────────────────────────────────────────
+// DOM refs
+// ─────────────────────────────────────────
+const $loading       = document.getElementById('loading');
+const $searchArea    = document.getElementById('search-area');
+const $q             = document.getElementById('q');
+const $stats         = document.getElementById('stats');
+const $results       = document.getElementById('results');
+const $pagination    = document.getElementById('pagination');
+const $progress      = document.getElementById('progress-fill');
+const $loadDetail    = document.getElementById('loading-detail');
+const $filterChips   = document.getElementById('filter-chips');
+
+// ─────────────────────────────────────────
+// Load DB
+// ─────────────────────────────────────────
+async function loadDB() {
+  try {
+    setProgress(10, 'Carregando sql.js...');
+    const SQL = await initSqlJs({
+      locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}`
+    });
+
+    setProgress(30, `Baixando normas.db...`);
+    const res = await fetch(DB_URL);
+    if (!res.ok) throw new Error(`Não foi possível carregar normas.db (${res.status})`);
+
+    const total = parseInt(res.headers.get('content-length') || '0');
+    const reader = res.body.getReader();
+    const chunks = [];
+    let received = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      if (total > 0) {
+        const pct = 30 + Math.round((received / total) * 50);
+        setProgress(pct, `Baixando... ${(received/1024/1024).toFixed(1)} MB`);
+      }
+    }
+
+    setProgress(82, 'Abrindo banco...');
+    const buf = new Uint8Array(received);
+    let offset = 0;
+    for (const chunk of chunks) { buf.set(chunk, offset); offset += chunk.length; }
+
+    db = new SQL.Database(buf);
+
+    setProgress(95, 'Carregando normas...');
+    allNormas = db.exec("SELECT codigo, titulo, url FROM normam_meta ORDER BY codigo")[0]?.values || [];
+    buildFilterChips();
+
+    setProgress(100, 'Pronto!');
+    setTimeout(() => {
+      $loading.style.display = 'none';
+      $searchArea.style.display = 'block';
+      $q.focus();
+    }, 300);
+
+  } catch (err) {
+    $loadDetail.textContent = '⚠ ' + err.message;
+    $loadDetail.style.color = '#e05555';
+    console.error(err);
+  }
+}
+
+function setProgress(pct, msg) {
+  $progress.style.width = pct + '%';
+  $loadDetail.textContent = msg;
+}
+
+// ─────────────────────────────────────────
+// Filter chips
+// ─────────────────────────────────────────
+function buildFilterChips() {
+  allNormas.forEach(([codigo]) => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.dataset.norma = codigo;
+    chip.textContent = codigo.replace('NORMAM-', '');
+    chip.title = codigo;
+    chip.addEventListener('click', () => setFilter(codigo));
+    $filterChips.appendChild(chip);
+  });
+}
+
+function setFilter(norma) {
+  activeFilter = norma;
+  document.querySelectorAll('.chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.norma === norma);
+  });
+  currentPage = 1;
+  if (lastResults) renderResults(lastResults);
+}
+
+document.querySelector('.chip-all').addEventListener('click', () => setFilter('all'));
+
+// ─────────────────────────────────────────
+// Search
+// ─────────────────────────────────────────
+function buscar() {
+  const q = $q.value.trim();
+  if (!q || !db) return;
+
+  currentPage = 1;
+
+  // Escapa caracteres especiais do FTS5
+  const qEscaped = q.replace(/["*]/g, ' ').trim();
+  if (!qEscaped) return;
+
+  let sql, params;
+
+  if (activeFilter === 'all') {
+    sql = `
+      SELECT codigo, pagina, texto
+      FROM normas
+      WHERE normas MATCH ?
+      ORDER BY rank
+    `;
+    params = [qEscaped];
+  } else {
+    sql = `
+      SELECT codigo, pagina, texto
+      FROM normas
+      WHERE normas MATCH ? AND codigo = ?
+      ORDER BY rank
+    `;
+    params = [qEscaped, activeFilter];
+  }
+
+  let rows;
+  try {
+    const res = db.exec(sql, params);
+    rows = res[0]?.values || [];
+  } catch (e) {
+    // Fallback: busca LIKE se FTS falhar (ex: termo muito curto)
+    try {
+      const likeQ = `%${q}%`;
+      if (activeFilter === 'all') {
+        const res2 = db.exec(
+          `SELECT codigo, pagina, texto FROM normas WHERE texto LIKE ? LIMIT 5000`,
+          [likeQ]
+        );
+        rows = res2[0]?.values || [];
+      } else {
+        const res2 = db.exec(
+          `SELECT codigo, pagina, texto FROM normas WHERE texto LIKE ? AND codigo = ? LIMIT 5000`,
+          [likeQ, activeFilter]
+        );
+        rows = res2[0]?.values || [];
+      }
+    } catch (e2) {
+      rows = [];
+    }
+  }
+
+  // Agrupa por norma
+  const grouped = {};
+  for (const [codigo, pagina, texto] of rows) {
+    if (!grouped[codigo]) grouped[codigo] = [];
+    grouped[codigo].push({ pagina, texto });
+  }
+
+  lastResults = { q, grouped };
+  renderResults(lastResults);
+}
+
+// ─────────────────────────────────────────
+// Render
+// ─────────────────────────────────────────
+function highlight(text, q) {
+  if (!q) return escHtml(text);
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(${escaped})`, 'gi');
+  return escHtml(text).replace(re, '<mark>$1</mark>');
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function getNormaMeta(codigo) {
+  const row = allNormas.find(r => r[0] === codigo);
+  return row ? { titulo: row[1], url: row[2] } : { titulo: codigo, url: '' };
+}
+
+function renderResults({ q, grouped }) {
+  $results.innerHTML = '';
+  $pagination.innerHTML = '';
+
+  const normaKeys = Object.keys(grouped);
+  const totalHits = normaKeys.reduce((s, k) => s + grouped[k].length, 0);
+
+  if (normaKeys.length === 0) {
+    $stats.innerHTML = '';
+    $results.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">⚓</div>
+        <h3>Nenhum resultado</h3>
+        <p>Tente outros termos ou verifique a grafia.</p>
+      </div>`;
+    return;
+  }
+
+  // Stats
+  $stats.innerHTML = `
+    <strong>${totalHits}</strong> ocorrências em
+    <strong>${normaKeys.length}</strong> norma${normaKeys.length > 1 ? 's' : ''}
+    para <strong>"${escHtml(q)}"</strong>
+  `;
+
+  // Paginar as normas
+  const totalPages = Math.ceil(normaKeys.length / CARDS_PER_PAGE);
+  const start = (currentPage - 1) * CARDS_PER_PAGE;
+  const pageKeys = normaKeys.slice(start, start + CARDS_PER_PAGE);
+
+  pageKeys.forEach((codigo, idx) => {
+    const hits = grouped[codigo];
+    const meta = getNormaMeta(codigo);
+    const card = document.createElement('div');
+    card.className = 'norma-card';
+
+    // Hits paginados por norma
+    const hitsHtml = hits.slice(0, HITS_PER_PAGE).map(({ pagina, texto }) => `
+      <div class="hit">
+        <div class="hit-page">${pagina}</div>
+        <div class="hit-text">${highlight(texto, q)}</div>
+      </div>
+    `).join('');
+
+    const moreHits = hits.length > HITS_PER_PAGE
+      ? `<div style="padding:10px 18px;font-size:12px;color:var(--muted);font-family:var(--mono);border-top:1px solid rgba(255,255,255,0.04)">
+           + ${hits.length - HITS_PER_PAGE} ocorrências adicionais —
+           <a href="${escHtml(meta.url)}" target="_blank" rel="noopener" style="color:var(--foam)">consultar PDF</a>
+         </div>`
+      : '';
+
+    const footerLink = meta.url
+      ? `<a href="${escHtml(meta.url)}" target="_blank" rel="noopener">
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+           Abrir PDF oficial
+         </a>`
+      : '';
+
+    card.innerHTML = `
+      <div class="norma-header">
+        <span class="norma-badge">${escHtml(codigo)}</span>
+        <span class="norma-titulo">${escHtml(meta.titulo)}</span>
+        <span class="norma-count">${hits.length} ${hits.length === 1 ? 'resultado' : 'resultados'}</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="norma-hits">
+        ${hitsHtml}
+        ${moreHits}
+      </div>
+      <div class="norma-footer">${footerLink}</div>
+    `;
+
+    // Auto-abre o primeiro card
+    if (idx === 0) card.classList.add('open');
+
+    card.querySelector('.norma-header').addEventListener('click', () => {
+      card.classList.toggle('open');
+    });
+
+    $results.appendChild(card);
+  });
+
+  // Paginação
+  if (totalPages > 1) {
+    renderPagination(totalPages);
+  }
+}
+
+function renderPagination(totalPages) {
+  $pagination.innerHTML = '';
+
+  const prev = document.createElement('button');
+  prev.className = 'page-btn';
+  prev.textContent = '← Anterior';
+  prev.disabled = currentPage === 1;
+  prev.addEventListener('click', () => { currentPage--; renderResults(lastResults); scrollToTop(); });
+  $pagination.appendChild(prev);
+
+  const info = document.createElement('span');
+  info.className = 'page-info';
+  info.textContent = `${currentPage} / ${totalPages}`;
+  $pagination.appendChild(info);
+
+  const next = document.createElement('button');
+  next.className = 'page-btn';
+  next.textContent = 'Próxima →';
+  next.disabled = currentPage === totalPages;
+  next.addEventListener('click', () => { currentPage++; renderResults(lastResults); scrollToTop(); });
+  $pagination.appendChild(next);
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: document.getElementById('search-area').offsetTop - 20, behavior: 'smooth' });
+}
+
+// ─────────────────────────────────────────
+// Event listeners
+// ─────────────────────────────────────────
+document.getElementById('btn-buscar').addEventListener('click', buscar);
+$q.addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
+// ─────────────────────────────────────────
+// Theme toggle (Vapozeiro pattern)
+// ─────────────────────────────────────────
+const STORAGE_KEY = 'vapozeiro_mare_theme';
+
+function applyTheme(theme) {
+  const isDark = theme !== 'light';
+  document.body.classList.toggle('dark', isDark);
+  const label = document.getElementById('themeLabel');
+  if (label) label.textContent = isDark ? 'ESCURO' : 'CLARO';
+  try { localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light'); } catch(e) {}
+}
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+  applyTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
+});
+
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  applyTheme(saved === 'light' ? 'light' : 'dark');
+} catch(e) {
+  applyTheme('dark');
+}
+
+// ─────────────────────────────────────────
+// Init
+// ─────────────────────────────────────────
+loadDB();
+</script>
+</body>
+</html>
