@@ -710,7 +710,7 @@
   <!-- Search UI (hidden until DB loaded) -->
   <div id="search-area">
     <div class="search-box">
-      <input id="q" type="search" placeholder="Ex: segurança + tripulação  ou  &quot;tripulação mínima&quot;"tripulação mínima"" autocomplete="off" spellcheck="false">
+      <input id="q" type="search" placeholder="Ex: segurança + tripulação  ou  &quot;tripulação mínima&quot;" autocomplete="off" spellcheck="false">
       <button id="btn-buscar">BUSCAR</button>
     </div>
 
@@ -863,7 +863,7 @@ document.querySelector('.chip-all').addEventListener('click', () => setFilter('a
 function parseQuery(q) {
   // Extrai frases entre aspas e termos soltos
   const tokens = [];
-  const re = /"([^"]+)"|(\S+)/g;
+  const re = /"([^"]+)"|(\+|\S+)/g;
   let m;
   while ((m = re.exec(q)) !== null) {
     tokens.push(m[1] || m[2]);
@@ -872,11 +872,11 @@ function parseQuery(q) {
 
   // Detecta operador explícito
   const upper = q.toUpperCase();
-  const hasOR  = /OR/.test(upper);
-  const hasAND = /AND/.test(upper);
+  const hasOR  = /\b(OR|OU)\b/.test(upper);
+  const hasAND = /\bAND\b/.test(upper) || q.includes('+');
 
   // Remove tokens AND/OR da lista
-  const terms = tokens.filter(t => t.toUpperCase() !== 'AND' && t.toUpperCase() !== 'OR');
+  const terms = tokens.filter(t => !['AND','OR','OU','+'].includes(t.toUpperCase()));
   if (terms.length === 0) return null;
 
   const operator = hasOR && !hasAND ? 'OR' : 'AND';
