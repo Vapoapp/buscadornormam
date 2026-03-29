@@ -710,7 +710,7 @@
   <!-- Search UI (hidden until DB loaded) -->
   <div id="search-area">
     <div class="search-box">
-      <input id="q" type="search" placeholder="Ex: segurança + tripulação  ou  &quot;tripulação mínima&quot;" autocomplete="off" spellcheck="false">
+      <input id="q" type="search" placeholder="Ex: segurança + tripulação  ou  &quot;tripulação mínima&quot;"tripulação mínima"" autocomplete="off" spellcheck="false">
       <button id="btn-buscar">BUSCAR</button>
     </div>
 
@@ -863,7 +863,7 @@ document.querySelector('.chip-all').addEventListener('click', () => setFilter('a
 function parseQuery(q) {
   // Extrai frases entre aspas e termos soltos
   const tokens = [];
-  const re = /"([^"]+)"|(\+|\S+)/g;
+  const re = /"([^"]+)"|(\S+)/g;
   let m;
   while ((m = re.exec(q)) !== null) {
     tokens.push(m[1] || m[2]);
@@ -872,11 +872,11 @@ function parseQuery(q) {
 
   // Detecta operador explícito
   const upper = q.toUpperCase();
-  const hasOR  = /\b(OR|OU)\b/.test(upper);
-  const hasAND = /\bAND\b/.test(upper) || q.includes('+');
+  const hasOR  = /OR/.test(upper);
+  const hasAND = /AND/.test(upper);
 
   // Remove tokens AND/OR da lista
-  const terms = tokens.filter(t => !['AND','OR','OU','+'].includes(t.toUpperCase()));
+  const terms = tokens.filter(t => t.toUpperCase() !== 'AND' && t.toUpperCase() !== 'OR');
   if (terms.length === 0) return null;
 
   const operator = hasOR && !hasAND ? 'OR' : 'AND';
@@ -903,14 +903,6 @@ function highlightParsed(text, parsed) {
   return result;
 }
 
-function buildFtsQuery(parsed) {
-  // Converte parsed query para sintaxe FTS5 MATCH
-  // Termos são escapados entre aspas; frases já vêm com aspas do parseQuery
-  const escape = t => '"' + t.replace(/"/g, ' ') + '"';
-  const connector = parsed.operator === 'OR' ? ' OR ' : ' ';
-  return parsed.terms.map(escape).join(connector);
-}
-
 function buscar() {
   const q = $q.value.trim();
   if (!q || !db) return;
@@ -928,16 +920,31 @@ function buscar() {
     const parsed = parseQuery(q);
     if (!parsed) { renderResults({ q, grouped: {} }); return; }
 
-    // FTS5 MATCH — nativo, rápido, com ranking por relevância
-    const ftsQuery = buildFtsQuery(parsed);
+    // Busca usando o primeiro termo como filtro SQL (mais rápido)
+    // depois filtra os demais em JS
+    const firstTerm = parsed.terms[0];
     let sql, params;
 
     if (activeFilter === 'all') {
-      sql = `SELECT codigo, pagina, texto FROM normas WHERE normas MATCH ? ORDER BY rank`;
-      params = [ftsQuery];
+      if (parsed.operator === 'OR') {
+        // OR: busca cada termo separado e une
+        const placeholders = parsed.terms.map(() => 'texto LIKE ?').join(' OR ');
+        sql = `SELECT codigo, pagina, texto FROM normas WHERE ${placeholders} ORDER BY codigo`;
+        params = parsed.terms.map(t => `%${t}%`);
+      } else {
+        // AND: filtra pelo primeiro e refina em JS
+        sql = `SELECT codigo, pagina, texto FROM normas WHERE texto LIKE ? ORDER BY codigo`;
+        params = [`%${firstTerm}%`];
+      }
     } else {
-      sql = `SELECT codigo, pagina, texto FROM normas WHERE normas MATCH ? AND codigo = ? ORDER BY rank`;
-      params = [ftsQuery, activeFilter];
+      if (parsed.operator === 'OR') {
+        const placeholders = parsed.terms.map(() => 'texto LIKE ?').join(' OR ');
+        sql = `SELECT codigo, pagina, texto FROM normas WHERE (${placeholders}) AND codigo = ? ORDER BY codigo`;
+        params = [...parsed.terms.map(t => `%${t}%`), activeFilter];
+      } else {
+        sql = `SELECT codigo, pagina, texto FROM normas WHERE texto LIKE ? AND codigo = ? ORDER BY codigo`;
+        params = [`%${firstTerm}%`, activeFilter];
+      }
     }
 
     let rows;
@@ -945,8 +952,13 @@ function buscar() {
       const res = db.exec(sql, params);
       rows = res[0]?.values || [];
     } catch (e) {
-      console.error('Erro FTS5:', e);
+      console.error('Erro na busca:', e);
       rows = [];
+    }
+
+    // Filtra em JS para AND com múltiplos termos
+    if (parsed.operator === 'AND' && parsed.terms.length > 1) {
+      rows = rows.filter(([, , texto]) => rowMatchesQuery(texto, parsed));
     }
 
     // Agrupa por norma
